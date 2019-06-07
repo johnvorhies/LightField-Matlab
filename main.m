@@ -18,3 +18,5 @@ filtered_image = fastDualFanFilterUV(st_uv,d);
 runtime = cputime - t;
 figure
 imshow(filtered_image)
+
+%Test for commit
