@@ -154,31 +154,9 @@ function [theta_c,theta_zmin,theta_zmax] = findThetaC(EPI, fftsize)
     for k = 1:length(theta_c)
         theta_c(k) = theta(peaks(k));
     end
-    % theta_c needs to be modified to give the correct normals for
-    % the filter parameters. If theta_c is in the first quadrant,
-    % theta_c should be used. If theta_c is in the 2nd quadrant,
-    % theta_c - pi should be used.
     
-%     for k = 1:length(theta_c)
-%         if theta_c(k) < pi/2
-%             theta_c(k) = theta_c(k);
-%         else
-%             theta_c(k) = theta_c(k) - pi;
-%         end
-%         if theta_zmin(k) < pi/2
-%             theta_zmin(k) = theta_zmin(k);
-%         else
-%             theta_zmin(k) = theta_zmin(k) - pi;
-%         end
-%         if theta_zmax(k) < pi/2
-%             theta_zmax(k) = theta_zmax(k);
-%         else
-%             theta_zmax(k) = theta_zmax(k) - pi;
-%         end
-%     end
-    
-    figure
-    mesh(EPI_fft_thresh)
+%     figure
+%     mesh(EPI_fft_thresh)
 end
 
 

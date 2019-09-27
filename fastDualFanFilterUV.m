@@ -4,7 +4,7 @@ function filtered_image = fastDualFanFilterUV(st_uv,d)
     % Only the outputs needed to filter the central light field image are 
     % computed.
     % INPUT:
-    %       st_uv:  light field in (s,t,u,v) parameterization, 8-bit
+    %       st_uv:  light field in (s,t,u,v) parameterization, 16-bit
     %               grayscale.
     %       d:      distance between (s,t) and (u,v) planes (focal length)
     % Output:
@@ -20,28 +20,10 @@ function filtered_image = fastDualFanFilterUV(st_uv,d)
     
     EPI = squeeze(st_uv(st_center,:,v_center,:));
     
-    %rotateFreqDomain = false;
-    
     [theta_c,theta_zmin,theta_zmax] = findThetaC(EPI,1024);
     
     angle = ceil(length(theta_c)/2);
-    % Frequency warping of IIR filter is too severe at theta_c values
-    % farther than pi/4 from omega_u or omega_v axis. Compensate by
-    % Rotation of the frequency domain
-%     if abs(theta_c(angle)) > pi/4
-%         rotateFreqDomain = true;
-%         if theta_c(angle) > pi/4
-%             theta_c(angle) = theta_c(angle) + pi/2;
-%             theta_zmin(angle) = theta_zmin(angle) + pi/2;
-%             theta_zmax(angle) = theta_zmax(angle) + pi/2;
-%         else
-%             theta_c(angle) = theta_c(angle) - pi/2;
-%             theta_zmin(angle) = theta_zmin(angle) - pi/2;
-%             theta_zmax(angle) = theta_zmax(angle) - pi/2;
-%         end
-%     end
-    [Nb,b,M,h_bp,~,negNorm] = DFFilterParams(d,theta_c(3),theta_zmin(3),theta_zmax(3));
-    %H_z = H_z';
+    [Nb,b,M,h_bp,negNorm] = DFFilterParams(d,theta_c(2),theta_zmin(2),theta_zmax(2));
 
     % Visualization of frequency responses
     %DFFVisuals(st_uv,h_bp,b);
@@ -60,7 +42,6 @@ function filtered_image = fastDualFanFilterUV(st_uv,d)
             filtered = filter(h_bp(nb,:),1,double(tv),[],2);
             filtered(:,1:delay) = [];
             st_uv_filt(:,:,nu,nb) = DFIIR(filtered,b(:,:,nb),negNorm);
-            %st_uv_filt(:,:,nu,nb) = DFFreqFilt(filtered,H_z(:,:,nb),negNorm);
         end
     end
 
@@ -86,7 +67,6 @@ function filtered_image = fastDualFanFilterUV(st_uv,d)
             filtered = filter(h_bp(nb,:),1,double(su),[],2);
             filtered(:,1:delay) = [];
             st_uv_filt(:,nv,:,nb) = DFIIR(filtered,b(:,:,nb),negNorm);
-            %st_uv_filt(:,nv,:,nb) = DFFreqFilt(filtered,H_z(:,:,nb),negNorm);
         end
     end
 
@@ -100,7 +80,7 @@ function filtered_image = fastDualFanFilterUV(st_uv,d)
 
     st_uv(st_center,:,:,:) = st_uv_recon2;
 
-    filtered_image = uint8(255*mat2gray(squeeze(st_uv(st_center,st_center,:,:))));
+    filtered_image = uint16(65535*mat2gray(squeeze(st_uv(st_center,st_center,:,:))));
 end
 
 
