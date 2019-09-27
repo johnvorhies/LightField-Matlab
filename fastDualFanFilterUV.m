@@ -6,7 +6,6 @@ function filtered_image = fastDualFanFilterUV(st_uv,d)
     % INPUT:
     %       st_uv:  light field in (s,t,u,v) parameterization, 8-bit
     %               grayscale.
-    %       zmin:   minimum passband depth (default this to d/2)
     %       d:      distance between (s,t) and (u,v) planes (focal length)
     % Output:
     %       filtered_image: depth-filtered central light field image
@@ -21,10 +20,28 @@ function filtered_image = fastDualFanFilterUV(st_uv,d)
     
     EPI = squeeze(st_uv(st_center,:,v_center,:));
     
+    %rotateFreqDomain = false;
+    
     [theta_c,theta_zmin,theta_zmax] = findThetaC(EPI,1024);
+    
     angle = ceil(length(theta_c)/2);
-    EPI = []; %#ok<NASGU>
-    [Nb,b,M,h_bp,H_z,negNorm] = DFFilterParams(d,theta_c(2),theta_zmin(2),theta_zmax(2));
+    % Frequency warping of IIR filter is too severe at theta_c values
+    % farther than pi/4 from omega_u or omega_v axis. Compensate by
+    % Rotation of the frequency domain
+%     if abs(theta_c(angle)) > pi/4
+%         rotateFreqDomain = true;
+%         if theta_c(angle) > pi/4
+%             theta_c(angle) = theta_c(angle) + pi/2;
+%             theta_zmin(angle) = theta_zmin(angle) + pi/2;
+%             theta_zmax(angle) = theta_zmax(angle) + pi/2;
+%         else
+%             theta_c(angle) = theta_c(angle) - pi/2;
+%             theta_zmin(angle) = theta_zmin(angle) - pi/2;
+%             theta_zmax(angle) = theta_zmax(angle) - pi/2;
+%         end
+%     end
+    [Nb,b,M,h_bp,~,negNorm] = DFFilterParams(d,theta_c(3),theta_zmin(3),theta_zmax(3));
+    %H_z = H_z';
 
     % Visualization of frequency responses
     %DFFVisuals(st_uv,h_bp,b);

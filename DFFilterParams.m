@@ -39,6 +39,7 @@ function [Nb,b,M,h_bp,H_z,negNorm] = DFFilterParams(d,theta_c,theta_zmin,theta_z
     N = [1 ,-tan(theta_c)]/sqrt(1+(tan(theta_c))^2);
     B = zeros(1,Nb);
     b = zeros(2,2,Nb);
+    c = 0.1;
 
     if N(1) < 0
         negNorm(1) = true;
@@ -56,7 +57,7 @@ function [Nb,b,M,h_bp,H_z,negNorm] = DFFilterParams(d,theta_c,theta_zmin,theta_z
 
     %Calculate bandwidths
     for nb = 1:Nb
-        B(nb) = abs(d*(nb-1+0.5)/(2*Nb)*(1/zmin-1/zmax));
+        B(nb) = d*(nb-1+0.5)/(2*Nb)*(1/zmin-1/zmax) + c;
     end
     %Calculate weights
     for nb=1:Nb
@@ -72,7 +73,6 @@ function [Nb,b,M,h_bp,H_z,negNorm] = DFFilterParams(d,theta_c,theta_zmin,theta_z
     z_s = exp(1j*omega);
     z_u = exp(1j*omega);
     H_z = zeros(length(omega),length(omega));
-
     for nb = 1:Nb
         for i = 1:length(omega)
             for j = 1:length(omega)
@@ -82,6 +82,12 @@ function [Nb,b,M,h_bp,H_z,negNorm] = DFFilterParams(d,theta_c,theta_zmin,theta_z
             end
         end
     end
+    figure
+    mesh(omega,omega,abs(H_z(:,:,4)))
+    xlabel('u')
+    ylabel('s')
+    view([90 270])
+    title('frequency filter response')
     
     %Continuous frequency response
     omega = linspace(-pi,pi,1024);
