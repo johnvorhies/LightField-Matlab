@@ -6,7 +6,8 @@ function [theta_c,theta_zmin,theta_zmax] = findThetaC(EPI, fftsize)
     %       EPI:        Epipolar image from an (s,t,u,v) parameterization
     %       fftsize:    Size of fft to perform for analysis
     % Output:
-    %       theta_c, theta_zmin, theta_zmax:    
+    %       theta_c, theta_zmin, theta_zmax:   from farthest depth to 
+    %                                          closest depth.
 
     %Convert EPI to frequency domain and normalize
     EPI_fft = fftshift(fft2(EPI,fftsize,fftsize));
@@ -28,14 +29,14 @@ function [theta_c,theta_zmin,theta_zmax] = findThetaC(EPI, fftsize)
     theta = linspace(-pi/2,pi/2,200);
     filt_norm = zeros(1,length(theta));
 
-    %Pre-filtering and thresholding
+    %---------------Pre-filtering and thresholding--------------
     
-    %Filter axes
+    % Filter axes
     theta_prefilt = [0 pi/2];
     sigmaU_prefilt = sigmaU * 10;
-    sigmaS_prefilt = sigmaS * 1.3;
+    sigmaS_prefilt = sigmaS;
     EPI_fft_prefilt = EPI_fft;
-    for k = 1:2
+    for k = 1:1
         a = ((cos(theta_prefilt(k))^2) / (2*sigmaU_prefilt^2)) +...
             ((sin(theta_prefilt(k))^2) / (2*sigmaS_prefilt^2));
         b = -((sin(2*theta_prefilt(k))) / (4*sigmaU_prefilt^2)) +...
@@ -46,6 +47,21 @@ function [theta_c,theta_zmin,theta_zmax] = findThetaC(EPI, fftsize)
         gauss = exp(-(a*X.^2 + 2*b*X.*Y + c*Y.^2));
         EPI_fft_prefilt = (1-gauss) .* EPI_fft_prefilt;
     end
+    
+    % Filter low frequencies
+%     sigmaU_prefilt = 0.5;
+%     sigmaS_prefilt = 0.5;
+%     
+%     a = ((cos(theta_prefilt(1))^2) / (2*sigmaU_prefilt^2)) +...
+%         ((sin(theta_prefilt(1))^2) / (2*sigmaS_prefilt^2));
+%     b = -((sin(2*theta_prefilt(1))) / (4*sigmaU_prefilt^2)) +...
+%         ((sin(2*theta_prefilt(1))) / (4*sigmaS_prefilt^2));
+%     c = ((sin(theta_prefilt(1))^2) / (2*sigmaU_prefilt^2)) +...
+%         ((cos(theta_prefilt(1))^2) / (2*sigmaS_prefilt^2));
+% 
+%     gauss = exp(-(a*X.^2 + 2*b*X.*Y + c*Y.^2));
+%     EPI_fft_prefilt = (1-gauss) .* EPI_fft_prefilt;
+%     
 
     EPI_fft_prefilt = EPI_fft_prefilt/max(EPI_fft_prefilt(:));
     EPI_fft_thresh = EPI_fft_prefilt.^2;
@@ -79,9 +95,6 @@ function [theta_c,theta_zmin,theta_zmax] = findThetaC(EPI, fftsize)
     
     filt_norm = filt_norm/max(filt_norm);
     
-%     figure
-%     plot(theta,filt_norm)
-    
     %Find peaks and valleys
     [~,peaks] = findpeaks(filt_norm);
     [~,valleys] = findpeaks(1 - filt_norm);
@@ -90,11 +103,49 @@ function [theta_c,theta_zmin,theta_zmax] = findThetaC(EPI, fftsize)
     theta_zmin = zeros(1,length(peaks));
     theta_zmax = zeros(1,length(peaks));
     B = 0.9; % Cutoff bandwidth
-  
-    for j = 1:length(peaks)
-        %first iteration
-        if j == 1
-            for k = 1:peaks(j)
+    
+    if isempty(valleys) ~= true % Check for only one global max
+        for j = 1:length(peaks)
+            %first iteration
+            if j == 1
+                for k = 1:peaks(j)
+                    if filt_norm(k) > B * filt_norm(peaks(j))
+                        theta_zmax(j) = theta(k);
+                        break
+                    end
+                end
+                for k = peaks(j):valleys(j)
+                    if filt_norm(k) < B * filt_norm(peaks(j))
+                        theta_zmin(j) = theta(k);
+                        break
+                    end
+                    if theta_zmin(j) == 0 && k == valleys(j)
+                        theta_zmin(j) = theta(valleys(j));
+                    end
+                end
+                continue
+            end
+            %last iteration
+            if j == length(peaks)
+                for k = valleys(j-1):peaks(j)
+                    if filt_norm(k) > B * filt_norm(peaks(j))
+                        theta_zmax(j) = theta(k);
+                        break
+                    end
+                end
+                for k = peaks(j):length(theta)
+                    if filt_norm(k) < B * filt_norm(peaks(j))
+                        theta_zmin(j) = theta(k);
+                        break
+                    end
+                    if theta_zmin(j) == 0 && k == length(theta)
+                        theta_zmin(j) = theta(length(theta));
+                    end
+                end
+                continue
+            end
+            %middle iterations
+            for k = valleys(j-1):peaks(j)
                 if filt_norm(k) > B * filt_norm(peaks(j))
                     theta_zmax(j) = theta(k);
                     break
@@ -109,44 +160,21 @@ function [theta_c,theta_zmin,theta_zmax] = findThetaC(EPI, fftsize)
                     theta_zmin(j) = theta(valleys(j));
                 end
             end
-            continue
-        end
-        %last iteration
-        if j == length(peaks)
-            for k = valleys(j-1):peaks(j)
-                if filt_norm(k) > B * filt_norm(peaks(j))
-                    theta_zmax(j) = theta(k);
-                    break
-                end
-            end
-            for k = peaks(j):length(theta)
-                if filt_norm(k) < B * filt_norm(peaks(j))
-                    theta_zmin(j) = theta(k);
-                    break
-                end
-                if theta_zmin(j) == 0 && k == length(theta)
-                    theta_zmin(j) = theta(length(theta));
-                end
-            end
-            continue
-        end
-        %middle iterations
-        for k = valleys(j-1):peaks(j)
-            if filt_norm(k) > B * filt_norm(peaks(j))
-                theta_zmax(j) = theta(k);
-                break
-            end
-        end
-        for k = peaks(j):valleys(j)
-            if filt_norm(k) < B * filt_norm(peaks(j))
-                theta_zmin(j) = theta(k);
-                break
-            end
-            if theta_zmin(j) == 0 && k == valleys(j)
-                theta_zmin(j) = theta(valleys(j));
-            end
-        end
 
+        end
+    else
+        for k = 1:peaks
+            if filt_norm(k) > B * filt_norm(peaks)
+                theta_zmax = theta(k);
+                break
+            end
+        end
+        for k = peaks:length(theta)
+            if filt_norm(k) < B * filt_norm(peaks)
+                theta_zmin = theta(k);
+                break
+            end
+        end
     end
         
     theta_c = zeros(1,length(peaks));
@@ -157,6 +185,16 @@ function [theta_c,theta_zmin,theta_zmax] = findThetaC(EPI, fftsize)
     
 %     figure
 %     mesh(EPI_fft_thresh)
+%     xlabel('$$\omega_{s}$$')
+%     ylabel('$$\omega_{u}$$')
+%     title('Thresholded EPI')
+%     view([0 90])
+%     
+%     figure
+%     plot(theta,filt_norm)
+%     xlabel('$$\theta$$')
+%     ylabel('Norm')
+%     title('Theta Norms')
 end
 
 

@@ -1,9 +1,24 @@
 % John Vorhies, The University of Akron, Sept 2019
-% input file for depth filtering in light fields. Assumes a 4-D gray scale 
-% light field input named "st_uv" with d defined as the camera focal
-% length. The output is the depth filtered central image of the light
-% field.
 
+% input file for depth filtering in light fields. Assumes a 4-D gray scale 
+% light field input named "st_uv" or 5-D RGB light field input named 
+% "st_uv_rgb" with d defined as the camera focal length. The output is the 
+% depth filtered central image of the light field.
+
+%---------------------- RGB -----------------------------
+[Nt,Ns,Nv,Nu,channels] = size(st_uv_rgb);
+filtered_image_rgb = zeros(Nv,Nu,3,'uint16');
+
+parfor channel = 1:3
+    single_channel = squeeze(st_uv_rgb(:,:,:,:,channel));
+    filtered_image_rgb(:,:,channel) = fastDualFanFilterUV(single_channel,d);
+end
+
+
+figure
+imshow(filtered_image_rgb)
+%%
+%--------------------- Grayscale ------------------------
 filtered_image = fastDualFanFilterUV(st_uv,d);
 figure
 imshow(filtered_image)

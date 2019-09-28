@@ -16,17 +16,19 @@ function filtered_image = fastDualFanFilterUV(st_uv,d)
     st_center = ceil(Nt/2);
     v_center = ceil(Nv/2);
 
-    st_uv = double(normalizeLF(st_uv));
+    % Uncomment if the filter output has a loss in dynamic range
+    %st_uv = double(normalizeLF(st_uv));
+    st_uv = double(st_uv);
     
     EPI = squeeze(st_uv(st_center,:,v_center,:));
     
     [theta_c,theta_zmin,theta_zmax] = findThetaC(EPI,1024);
     
     angle = ceil(length(theta_c)/2);
-    [Nb,b,M,h_bp,negNorm] = DFFilterParams(d,theta_c(2),theta_zmin(2),theta_zmax(2));
+    [Nb,b,M,h_bp,negNorm,N,B] = DFFilterParams(d,theta_c(2),theta_zmin(2),theta_zmax(2));
 
     % Visualization of frequency responses
-    %DFFVisuals(st_uv,h_bp,b);
+    %plotFrequencyResponse(st_uv,h_bp,b,N,B);
 
     %-------------------------Filtering along u,v-------------------------
     % T,V subband and hyperplanar filter
@@ -54,7 +56,9 @@ function filtered_image = fastDualFanFilterUV(st_uv,d)
     end
 
     st_uv(:,st_center,:,:) = st_uv_recon1;
-    st_uv = normalizeLF(st_uv);
+    
+    % Uncomment if the filter output has a loss in dynamic range
+    %st_uv = normalizeLF(st_uv);
 
     st_uv_recon1 = []; %#ok<NASGU>
     

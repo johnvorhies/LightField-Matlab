@@ -1,4 +1,4 @@
-function DFFVisuals(st_uv,h_bp,b)
+function plotFrequencyResponse(st_uv,h_bp,b,N,B)
     % John Vorhies, The University of Akron, Feb 2019
     % Shows the impulse and frequency responses of the FIR bandpass
     % filters, the 2D filter from the selected feedback coefficients
@@ -68,12 +68,29 @@ function DFFVisuals(st_uv,h_bp,b)
     for nb = 1:Nb
         figure
         mesh(omega,omega,abs(H_z(:,:,nb)))
-        xlabel('$$\Omega_{u}$$')
-        ylabel('$$\Omega_{s}$$')
-        title_freq = strcat('Band ', num2str(nb));
+        xlabel('$$\omega_{u}$$')
+        ylabel('$$\omega_{s}$$')
+        title_freq = strcat('Frequency Response, Band',{' '}, num2str(nb));
         title(title_freq)
         view([90 270])
     end
+    
+    %Continuous frequency response
+    omega = linspace(-pi,pi,1024);
+    s_su = 1j*omega;
+    H_s = zeros(length(omega),length(omega));
+    for nu = 1:1024
+        for ns = 1:1024
+            H_s(ns,nu) = (1+(N(1)*s_su(ns)+N(2)*s_su(nu))/B(4)).^(-1);
+        end
+    end
+    
+    figure
+    mesh(omega,omega,abs(H_s))
+    xlabel('$$\Omega_{u}$$')
+    ylabel('$$\Omega_{s}$$')
+    view([90 270])
+    title('Continuous Frequency Response')
 
     EPI_fft = fftshift(fft2(squeeze(st_uv(st_center,:,v_center,:)),fftsize,fftsize));
     figure

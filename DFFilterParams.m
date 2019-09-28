@@ -1,4 +1,4 @@
-function [Nb,b,M,h_bp,negNorm] = DFFilterParams(d,theta_c,theta_zmin,theta_zmax)
+function [Nb,b,M,h_bp,negNorm,N,B] = DFFilterParams(d,theta_c,theta_zmin,theta_zmax)
     % John Vorhies, The University of Akron, Feb 2019
     % Determines the filter parameters for the dual-fan filter bank
     % Dansereau, et. al 2007
