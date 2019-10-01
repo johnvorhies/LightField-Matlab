@@ -31,37 +31,20 @@ function [theta_c,theta_zmin,theta_zmax] = findThetaC(EPI, fftsize)
 
     %---------------Pre-filtering and thresholding--------------
     
-    % Filter axes
-    theta_prefilt = [0 pi/2];
+    % Filter omega_s axis
+    theta_prefilt = 0;
     sigmaU_prefilt = sigmaU * 10;
     sigmaS_prefilt = sigmaS;
     EPI_fft_prefilt = EPI_fft;
-    for k = 1:1
-        a = ((cos(theta_prefilt(k))^2) / (2*sigmaU_prefilt^2)) +...
-            ((sin(theta_prefilt(k))^2) / (2*sigmaS_prefilt^2));
-        b = -((sin(2*theta_prefilt(k))) / (4*sigmaU_prefilt^2)) +...
-            ((sin(2*theta_prefilt(k))) / (4*sigmaS_prefilt^2));
-        c = ((sin(theta_prefilt(k))^2) / (2*sigmaU_prefilt^2)) +...
-            ((cos(theta_prefilt(k))^2) / (2*sigmaS_prefilt^2));
+    a = ((cos(theta_prefilt)^2) / (2*sigmaU_prefilt^2)) +...
+        ((sin(theta_prefilt)^2) / (2*sigmaS_prefilt^2));
+    b = -((sin(2*theta_prefilt)) / (4*sigmaU_prefilt^2)) +...
+        ((sin(2*theta_prefilt)) / (4*sigmaS_prefilt^2));
+    c = ((sin(theta_prefilt)^2) / (2*sigmaU_prefilt^2)) +...
+        ((cos(theta_prefilt)^2) / (2*sigmaS_prefilt^2));
 
-        gauss = exp(-(a*X.^2 + 2*b*X.*Y + c*Y.^2));
-        EPI_fft_prefilt = (1-gauss) .* EPI_fft_prefilt;
-    end
-    
-    % Filter low frequencies
-%     sigmaU_prefilt = 0.5;
-%     sigmaS_prefilt = 0.5;
-%     
-%     a = ((cos(theta_prefilt(1))^2) / (2*sigmaU_prefilt^2)) +...
-%         ((sin(theta_prefilt(1))^2) / (2*sigmaS_prefilt^2));
-%     b = -((sin(2*theta_prefilt(1))) / (4*sigmaU_prefilt^2)) +...
-%         ((sin(2*theta_prefilt(1))) / (4*sigmaS_prefilt^2));
-%     c = ((sin(theta_prefilt(1))^2) / (2*sigmaU_prefilt^2)) +...
-%         ((cos(theta_prefilt(1))^2) / (2*sigmaS_prefilt^2));
-% 
-%     gauss = exp(-(a*X.^2 + 2*b*X.*Y + c*Y.^2));
-%     EPI_fft_prefilt = (1-gauss) .* EPI_fft_prefilt;
-%     
+    gauss = exp(-(a*X.^2 + 2*b*X.*Y + c*Y.^2));
+    EPI_fft_prefilt = (1-gauss) .* EPI_fft_prefilt;
 
     EPI_fft_prefilt = EPI_fft_prefilt/max(EPI_fft_prefilt(:));
     EPI_fft_thresh = EPI_fft_prefilt.^2;
@@ -96,8 +79,10 @@ function [theta_c,theta_zmin,theta_zmax] = findThetaC(EPI, fftsize)
     filt_norm = filt_norm/max(filt_norm);
     
     %Find peaks and valleys
-    [~,peaks] = findpeaks(filt_norm);
-    [~,valleys] = findpeaks(1 - filt_norm);
+    [~,peaks] = findpeaks(filt_norm,'MinPeakProminence',0.01);
+    [~,valleys] = findpeaks(1 - filt_norm,'MinPeakProminence',0.01);
+    %[~,peaks] = findpeaks(filt_norm);
+    %[~,valleys] = findpeaks(1-filt_norm);
     
     %Find cutoff to determine theta_zmin, theta_zmax
     theta_zmin = zeros(1,length(peaks));
@@ -183,18 +168,18 @@ function [theta_c,theta_zmin,theta_zmax] = findThetaC(EPI, fftsize)
         theta_c(k) = theta(peaks(k));
     end
     
-%     figure
-%     mesh(EPI_fft_thresh)
-%     xlabel('$$\omega_{s}$$')
-%     ylabel('$$\omega_{u}$$')
-%     title('Thresholded EPI')
-%     view([0 90])
-%     
-%     figure
-%     plot(theta,filt_norm)
-%     xlabel('$$\theta$$')
-%     ylabel('Norm')
-%     title('Theta Norms')
+    figure
+    mesh(EPI_fft_thresh)
+    xlabel('$$\omega_{s}$$')
+    ylabel('$$\omega_{u}$$')
+    title('Thresholded EPI')
+    view([0 90])
+    
+    figure
+    plot(theta,filt_norm)
+    xlabel('$$\theta$$')
+    ylabel('Norm')
+    title('Theta Norms')
 end
 
 
