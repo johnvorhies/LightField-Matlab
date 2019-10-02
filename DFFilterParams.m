@@ -36,7 +36,7 @@ function [Nb,b,M,h_bp,negNorm,N,B] = DFFilterParams(d,theta_c,theta_zmin,theta_z
     %Hyperplanar filter parameters
     zmin = d/(tan(theta_zmin)+1);
     zmax = d/(tan(theta_zmax)+1);
-    theta_c = (atan(d/zmin - 1)+ atan(d/zmax -1))/2;
+    %theta_c = (atan(d/zmin - 1)+ atan(d/zmax -1))/2;
     N = [1 ,-tan(theta_c)]/sqrt(1+(tan(theta_c))^2);
     B = zeros(1,Nb);
     b = zeros(2,2,Nb);
