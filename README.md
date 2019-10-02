@@ -4,6 +4,13 @@ LightField-Matlab is a Matlab library for light field image processing. It imple
 ## Getting Started
 Depth filtering can be accomplished from **Main**. Load the .mat file for the light field and select a section to run for either RGB, grayscale, or wavelet compression. The wavelet compression functions are still a work in progress, but the grayscale version seems to work as intended.
 
+All of the graphs used Latex markup. Add these 3 lines to your Matlab startup file:
+```Matlab
+set(groot,'defaulttextinterpreter','latex');  
+set(groot, 'defaultAxesTickLabelInterpreter','latex');  
+set(groot, 'defaultLegendInterpreter','latex');
+```
+
 ### Reading Material
 
 [A 4-D Dual-Fan Filter Bank for Depth Filtering in Light Fields](https://ieeexplore.ieee.org/stamp/stamp.jsp?tp=&arnumber=4063539)
