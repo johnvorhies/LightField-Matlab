@@ -86,5 +86,8 @@ Implementation of the frequency-planar filter. Takes an input signal x (EPI) and
 * b: The filter coefficients for convolution from **DFFilterParams**
 * negNorm: Boolean indicating if the direction of iteration should be reversed
 
+#### Outputs:
+* y2: The filtered sub-band signal to be summed with other filtered sub-band signal components by **applyFilter**.
+
 ### st_uv = normalizeLF(st_uv)
 Takes each image in the light field and normalizes them for 16-bit grayscale. If the output image of the filter bank has a loss in dynamic range, this should be uncommented in **applyFilter**. Not recommended for RGB as it does not weight the individual channels.
