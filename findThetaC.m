@@ -20,12 +20,12 @@ function [theta_c,theta_zmin,theta_zmax] = findThetaC(EPI, fftsize)
     x = linspace(-pi,pi,fftsize); 
     y = linspace(-pi,pi,fftsize);
     [X,Y] = meshgrid(x, y);
-    sigmaS = 0.1;
-    sigmaU = 0.7;
-    scaleS = 1;
-    scaleU = 10;
-    sigmaS = scaleS*sigmaS;
-    sigmaU = scaleU*sigmaU;
+    sigmaY = 0.1;
+    sigmaX = 0.7;
+    scaleY = 1;
+    scaleX = 10;
+    sigmaY = scaleY*sigmaY;
+    sigmaX = scaleX*sigmaX;
     theta = linspace(-pi/2,pi/2,200);
     filt_norm = zeros(1,length(theta));
 
@@ -33,15 +33,15 @@ function [theta_c,theta_zmin,theta_zmax] = findThetaC(EPI, fftsize)
     
     % Filter omega_s axis
     theta_prefilt = 0;
-    sigmaU_prefilt = sigmaU * 10;
-    sigmaS_prefilt = sigmaS;
+    sigmaX_prefilt = sigmaX * 10;
+    sigmaY_prefilt = sigmaY;
     EPI_fft_prefilt = EPI_fft;
-    a = ((cos(theta_prefilt)^2) / (2*sigmaU_prefilt^2)) +...
-        ((sin(theta_prefilt)^2) / (2*sigmaS_prefilt^2));
-    b = -((sin(2*theta_prefilt)) / (4*sigmaU_prefilt^2)) +...
-        ((sin(2*theta_prefilt)) / (4*sigmaS_prefilt^2));
-    c = ((sin(theta_prefilt)^2) / (2*sigmaU_prefilt^2)) +...
-        ((cos(theta_prefilt)^2) / (2*sigmaS_prefilt^2));
+    a = ((cos(theta_prefilt)^2) / (2*sigmaX_prefilt^2)) +...
+        ((sin(theta_prefilt)^2) / (2*sigmaY_prefilt^2));
+    b = -((sin(2*theta_prefilt)) / (4*sigmaX_prefilt^2)) +...
+        ((sin(2*theta_prefilt)) / (4*sigmaY_prefilt^2));
+    c = ((sin(theta_prefilt)^2) / (2*sigmaX_prefilt^2)) +...
+        ((cos(theta_prefilt)^2) / (2*sigmaY_prefilt^2));
 
     gauss = exp(-(a*X.^2 + 2*b*X.*Y + c*Y.^2));
     EPI_fft_prefilt = (1-gauss) .* EPI_fft_prefilt;
@@ -64,12 +64,12 @@ function [theta_c,theta_zmin,theta_zmax] = findThetaC(EPI, fftsize)
     %Apply 2D Gaussian filter at rotating angles
     j = 1;
     for k = length(theta):-1:1
-        a = ((cos(theta(k))^2) / (2*sigmaS^2)) +...
-            ((sin(theta(k))^2) / (2*sigmaU^2));
-        b = ((sin(2*theta(k))) / (4*sigmaS^2)) -...
-            ((sin(2*theta(k))) / (4*sigmaU^2));
-        c = ((sin(theta(k))^2) / (2*sigmaS^2)) +...
-            ((cos(theta(k))^2) / (2*sigmaU^2));
+        a = ((cos(theta(k))^2) / (2*sigmaY^2)) +...
+            ((sin(theta(k))^2) / (2*sigmaX^2));
+        b = ((sin(2*theta(k))) / (4*sigmaY^2)) -...
+            ((sin(2*theta(k))) / (4*sigmaX^2));
+        c = ((sin(theta(k))^2) / (2*sigmaY^2)) +...
+            ((cos(theta(k))^2) / (2*sigmaX^2));
 
         gauss = exp(-(a*X.^2 + 2*b*X.*Y + c*Y.^2));
         filt_norm(j) = norm(gauss .* EPI_fft_thresh,'fro');
@@ -168,18 +168,20 @@ function [theta_c,theta_zmin,theta_zmax] = findThetaC(EPI, fftsize)
         theta_c(k) = theta(peaks(k));
     end
     
-    figure
-    mesh(EPI_fft_thresh)
-    xlabel('$$\omega_{s}$$')
-    ylabel('$$\omega_{u}$$')
-    title('Thresholded EPI')
-    view([0 90])
+%     figure
+%     mesh(EPI_fft_thresh)
+%     xlabel('$$\omega_{s}$$')
+%     ylabel('$$\omega_{u}$$')
+%     title('Thresholded EPI')
+%     view([0 90])
+%     
+%     figure
+%     plot(theta,filt_norm)
+%     xlabel('$$\theta$$')
+%     ylabel('Norm')
+%     title('Theta Norms')
+%     ylim([0.1 1.1])
     
-    figure
-    plot(theta,filt_norm)
-    xlabel('$$\theta$$')
-    ylabel('Norm')
-    title('Theta Norms')
 end
 
 
