@@ -1,4 +1,4 @@
-function filtered_image = fastDualFanFilterUV(st_uv,d)
+function filtered_image = fastDualFanFilterUV(st_uv)
     % John Vorhies, The University of Akron, Feb 2019
     % Implements the "fast" dual-fan filter bank, Dansereau, et. al 2007.
     % Only the outputs needed to filter the central light field image are 
@@ -13,23 +13,25 @@ function filtered_image = fastDualFanFilterUV(st_uv,d)
     % ASSUMES SAME SIZE FOR S AND T DIMENSIONS
 
     [Nt,Ns,Nv,Nu,Nc] = size(st_uv);
+    fftsize = max(size(st_uv));
     st_center = ceil(Nt/2);
+    u_center = ceil(Nu/2);
     v_center = ceil(Nv/2);
     
-    st_uv = double(st_uv);
+    st_uv = single(st_uv);
     
     if Nc == 1
         EPI = squeeze(st_uv(st_center,:,v_center,:));
 
-        [theta_c,theta_zmin,theta_zmax] = findThetaC(EPI,1024);
+        [theta_c,theta_zmin,theta_zmax] = findThetaC(EPI,fftsize);
         %angle = ceil(length(theta_c)/2);
-        [Nb,b,M,h_bp,negNorm,N,B] = DFFilterParams(d,theta_c(2),theta_zmin(2),theta_zmax(2));
+        [Nb,b,M,h_bp,negNorm,N,B] = DFFilterParams(theta_c(5),theta_zmin(5),theta_zmax(5));
     else
         EPI = squeeze(st_uv(st_center,:,v_center,:,:));
         EPI = rgb2gray(uint16(EPI));
         
-        [theta_c,theta_zmin,theta_zmax] = findThetaC(EPI,1024);
-        [Nb,b,M,h_bp,negNorm,N,B] = DFFilterParams(d,theta_c(3),theta_zmin(3),theta_zmax(3));
+        [theta_c,theta_zmin,theta_zmax] = findThetaC(EPI,fftsize);
+        [Nb,b,M,h_bp,negNorm,N,B] = DFFilterParams(theta_c(1),theta_zmin(1),theta_zmax(1));
     end
         
     % Visualization of frequency responses
@@ -39,7 +41,7 @@ function filtered_image = fastDualFanFilterUV(st_uv,d)
     if Nc == 1
         filtered_image = applyFilter(st_uv,b,h_bp,negNorm,Nb,M);
     else
-        parfor Nc = 1:3
+        for Nc = 1:3
             st_uv_channel = squeeze(st_uv(:,:,:,:,Nc));
             filtered_image(:,:,Nc) = applyFilter(st_uv_channel,b,h_bp,negNorm,Nb,M);
         end
