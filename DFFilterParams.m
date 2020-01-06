@@ -1,4 +1,4 @@
-function [Nb,b,M,h_bp,negNorm,N,B] = DFFilterParams(d,theta_c,theta_zmin,theta_zmax)
+function [Nb,b,M,h_bp,negNorm,N,B] = DFFilterParams(theta_c,theta_zmin,theta_zmax)
     % John Vorhies, The University of Akron, Feb 2019
     % Determines the filter parameters for the dual-fan filter bank
     % Dansereau, et. al 2007
@@ -34,9 +34,6 @@ function [Nb,b,M,h_bp,negNorm,N,B] = DFFilterParams(d,theta_c,theta_zmin,theta_z
     end
 
     %Hyperplanar filter parameters
-    zmin = d/(tan(theta_zmin)+1);
-    zmax = d/(tan(theta_zmax)+1);
-    %theta_c = (atan(d/zmin - 1)+ atan(d/zmax -1))/2;
     theta_c = (theta_zmin+theta_zmax)/2;
     N = [1 ,-tan(theta_c)]/sqrt(1+(tan(theta_c))^2);
     B = zeros(1,Nb);
@@ -61,10 +58,6 @@ function [Nb,b,M,h_bp,negNorm,N,B] = DFFilterParams(d,theta_c,theta_zmin,theta_z
     for nb = 1:Nb
         B(nb) = (nb-1+0.5)/(2*Nb)*(tan(theta_zmin)-tan(theta_zmax))+c;
     end
-    
-%     for nb = 1:Nb
-%         B(nb) = d*(nb-1+0.5)/(2*Nb)*(1/zmin-1/zmax) + c;
-%     end
     
     %Calculate weights
     for nb=1:Nb
