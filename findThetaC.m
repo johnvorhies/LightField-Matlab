@@ -81,8 +81,6 @@ function [theta_c,theta_zmin,theta_zmax] = findThetaC(EPI, fftsize)
     %Find peaks and valleys
     [~,peaks] = findpeaks(filt_norm,'MinPeakProminence',0.01);
     [~,valleys] = findpeaks(1 - filt_norm,'MinPeakProminence',0.01);
-    %[~,peaks] = findpeaks(filt_norm);
-    %[~,valleys] = findpeaks(1-filt_norm);
     
     %Find cutoff to determine theta_zmin, theta_zmax
     theta_zmin = zeros(1,length(peaks));
@@ -168,19 +166,24 @@ function [theta_c,theta_zmin,theta_zmax] = findThetaC(EPI, fftsize)
         theta_c(k) = theta(peaks(k));
     end
     
-%     figure
-%     mesh(EPI_fft_thresh)
-%     xlabel('$$\omega_{s}$$')
-%     ylabel('$$\omega_{u}$$')
-%     title('Thresholded EPI')
-%     view([0 90])
-%     
-%     figure
-%     plot(theta,filt_norm)
-%     xlabel('$$\theta$$')
-%     ylabel('Norm')
-%     title('Theta Norms')
-%     ylim([0.1 1.1])
+    figure
+    mesh(EPI_fft_thresh)
+    xlabel('$$\omega_{s}$$')
+    ylabel('$$\omega_{u}$$')
+    title('Thresholded EPI')
+    view([0 90])
+    
+    figure
+    plot(theta,filt_norm)
+    xlabel('$$\theta$$')
+    ylabel('Norm')
+    title('Theta Norms')
+    ylim([0.1 1.1])
+    set(gca,'XTick',-pi/2:pi/4:pi/2)
+    x_labels = {'$$-\frac{\pi}{2}$$','$$-\frac{\pi}{4}$$','0',...
+        '$$\frac{\pi}{4}$$','$$\frac{\pi}{2}$$'};
+    set(gca,'XtickLabel',x_labels)
+%     %print('filt_norm_Tarot','-depsc','-r300')
     
 end
 
