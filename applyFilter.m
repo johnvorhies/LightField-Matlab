@@ -12,7 +12,7 @@ function filtered_image = applyFilter(st_uv,b,h_bp,negNorm,Nb,M)
     delay = floor((M-1)/2);
     delay1 = zeros(Nt,delay);
     delay2 = zeros(Ns,delay);
-    st_uv_filt = zeros(Nt,Nv,Nu,Nb);
+    st_uv_filt = zeros(Nt,Nv,Nu,Nb,'single');
 
     for nu = 1:Nu
         % compensate for group delay of filter
@@ -40,7 +40,7 @@ function filtered_image = applyFilter(st_uv,b,h_bp,negNorm,Nb,M)
     st_uv_recon1 = []; %#ok<NASGU>
     
     % S,U subband and hyperplanar filter
-    st_uv_filt = zeros(Ns,Nv,Nu,Nb);
+    st_uv_filt = zeros(Ns,Nv,Nu,Nb,'single');
     for nv = 1:Nv
         % compensate for group delay of filter
         su = [squeeze(st_uv(st_center,:,nv,:)) delay2];
