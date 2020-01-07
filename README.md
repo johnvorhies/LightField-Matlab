@@ -1,8 +1,8 @@
 # LightField-Matlab
-LightField-Matlab is a Matlab library for light field image processing. It implements the 4-D IIR dual-fan filter bank for depth filtering (Dansereau, et. al 2007), an algorithm for finding minimum and maximum depths from a light field image, and an algorithm for wavelet compression of light fields.
+LightField-Matlab is a Matlab library for light field image processing. It implements the 4-D IIR dual-fan filter bank for depth filtering (Dansereau, et. al 2007), and an algorithm for finding minimum and maximum depths from a light field image.
 
 ## Getting Started
-Depth filtering can be accomplished from **Main**. Load the .mat file for the light field and select a section to run for either RGB, grayscale, or wavelet compression. The wavelet compression functions are still a work in progress, but the grayscale version seems to work as intended.
+Depth filtering can be accomplished from **Main**. Load the .mat file for the light field, add the file as an input argument for **fastDualFanFilterUV** and run.
 
 All of the graphs used Latex markup. Add these 3 lines to your Matlab startup file:
 ```Matlab
@@ -22,14 +22,13 @@ set(groot, 'defaultLegendInterpreter','latex');
 ## Functions
 
 ### Main
-Calls fastDualFanFilterUV for either grayscale or RGB light field depth filtering and also calls LFWaveletCompression. It requires a .mat file of the light field in two-plane parameterization form to be loaded into the Matlab workspace with either the name **st_uv** or **st_uv_rgb** and the focal length of the camera **d**. 
+Calls fastDualFanFilterUV for either grayscale or RGB light field depth filtering. It requires a .mat file of the light field to be loaded into the Matlab workspace as a 4-D grayscale or 5-D RGB tensor.
 
 ### filtered_image = fastDualFanFilterUV(st_uv,d)
 Main control function for depth filtering. Calls **findThetaC**, **DFFilterParams**, **plotFrequencyResponse** and **applyFilter**. This function also checks whether the input light field is grayscale or RGB. If the light field is grayscale, an epipolar image (EPI) is extracted from the central light field image for **findThetaC** and **applyFilter** is called once. If the light field is RGB, an EPI is extracted from the central light field image and converted to grayscale for **findThetaC** and **applyFilter** is called three times, once for each color channel. For RGB, parfor is used to call **applyFilter** three times in parallel. This requires the Parallel Computing Toolbox. This can be changed to a for loop if this toolbox is not available to you.
 
 #### Inputs:
 * st_uv: a light field in two-plane parameterization form.
-* d: The focal length of the light field camera
 
 #### Outputs:
 * filtered_image: The depth-filtered central image of the input light field.
@@ -47,11 +46,10 @@ Searches the Fourier domain of an EPI for energy content that resembles the dual
 * theta_zmin: the angle of the right-most edge of the depth content to the omega_u axis.
 * theta_zmax: the angle of the left-most edge of the depth content to the omega_u axis.
 
-### [Nb,b,M,h_bp,negNorm,N,B] = DFFilterParams(d,theta_c,theta_zmin,theta_zmax)
+### [Nb,b,M,h_bp,negNorm,N,B] = DFFilterParams(theta_c,theta_zmin,theta_zmax)
 Creates the filter coefficients for the dual-fan filter and the coefficients for the sub-band filters in the dual-fan filter bank. This function also checks if the orientation of the dual-fan filter involves a negative normal value for use by **applyFilter**.
 
 #### Inputs:
-* d: The focal length of the light field camera
 * theta_c, theta_zmin, theta_zmax: a value selected from the output of *findThetaC*.
 
 #### Outputs:
@@ -66,11 +64,11 @@ Creates the filter coefficients for the dual-fan filter and the coefficients for
 #### Usage:
 To create the filter parameters corresponding to the farthest depth found by **findThetaC**,
 ```Matlab
-[Nb,b,M,h_bp,negNorm,N,B] = DFFilterParams(d,theta_c(1),theta_zmin(1),theta_zmax(1))
+[Nb,b,M,h_bp,negNorm,N,B] = DFFilterParams(theta_c(1),theta_zmin(1),theta_zmax(1))
 ```
 Or to create filter parameters corresponding to the closest depth found by **findThetaC**,
 ```Matlab
-[Nb,b,M,h_bp,negNorm,N,B] = DFFilterParams(d,theta_c(length(theta_c)),theta_zmin(length(theta_zmin)),theta_zmax(length(theta_zmax)))
+[Nb,b,M,h_bp,negNorm,N,B] = DFFilterParams(theta_c(length(theta_c)),theta_zmin(length(theta_zmin)),theta_zmax(length(theta_zmax)))
 ```
 
 ### plotFrequencyResponse(st_uv,h_bp,b,N,B)
@@ -108,4 +106,4 @@ Implementation of the frequency-planar filter. Takes an input signal x (EPI) and
 * y2: The filtered sub-band signal to be summed with other filtered sub-band signal components by **applyFilter**.
 
 ### st_uv = normalizeLF(st_uv)
-Takes each image in the light field and normalizes them for 16-bit grayscale. If the output image of the filter bank has a loss in dynamic range, this should be uncommented in **applyFilter**. Not recommended for RGB as it does not weight the individual channels.
+Takes each image in the light field and normalizes them for 16-bit grayscale or RGB. If the output image of the filter bank has a loss in dynamic range, this should be uncommented in **applyFilter**.
