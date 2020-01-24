@@ -1,3 +1,4 @@
+[![DOI](https://zenodo.org/badge/190502490.svg)](https://zenodo.org/badge/latestdoi/190502490)
 # LightField-Matlab
 LightField-Matlab is a Matlab library for light field image processing. It implements the 4-D IIR dual-fan filter bank for depth filtering (Dansereau, et. al 2007), and an algorithm for finding minimum and maximum depths from a light field image.
 
