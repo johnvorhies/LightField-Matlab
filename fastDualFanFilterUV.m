@@ -24,18 +24,19 @@ function filtered_image = fastDualFanFilterUV(st_uv)
         EPI = squeeze(st_uv(st_center,:,v_center,:));
 
         [theta_c,theta_zmin,theta_zmax] = findThetaC(EPI,fftsize);
-        %angle = ceil(length(theta_c)/2);
-        [Nb,b,M,h_bp,negNorm,N,B] = DFFilterParams(theta_c(5),theta_zmin(5),theta_zmax(5));
+        angle = ceil(length(theta_c)/2);
+        [Nb,b,M,h_bp,negNorm,N,B] = DFFilterParams(theta_c(angle),theta_zmin(angle),theta_zmax(angle));
     else
-        EPI = squeeze(st_uv(st_center,:,v_center,:,:));
+        EPI = squeeze(st_uv(st_center,:,3124,:,:));
         EPI = rgb2gray(uint16(EPI));
         
         [theta_c,theta_zmin,theta_zmax] = findThetaC(EPI,fftsize);
-        [Nb,b,M,h_bp,negNorm,N,B] = DFFilterParams(theta_c(1),theta_zmin(1),theta_zmax(1));
+        angle = ceil(length(theta_c)/2);
+        [Nb,b,M,h_bp,negNorm,N,B] = DFFilterParams(theta_c(angle),theta_zmin(angle),theta_zmax(angle));
     end
         
     % Visualization of frequency responses
-    %plotFrequencyResponse(st_uv,h_bp,b,N,B);
+    plotFrequencyResponse(st_uv,h_bp,b,N,B);
     
     filtered_image = zeros(Nv,Nu,Nc,'uint16');
     if Nc == 1
