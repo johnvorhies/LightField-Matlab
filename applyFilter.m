@@ -18,14 +18,14 @@ function filtered_image = applyFilter(st_uv,b,h_bp,negNorm,Nb,M)
         % compensate for group delay of filter
         tv = [squeeze(st_uv(:,st_center,:,nu)) delay1];
         for nb = 1:Nb
-            filtered = filter(h_bp(nb,:),1,double(tv),[],2);
+            filtered = filter(h_bp(nb,:),1,tv,[],2);
             filtered(:,1:delay) = [];
             st_uv_filt(:,:,nu,nb) = DFIIR(filtered,b(:,:,nb),negNorm);
         end
     end
 
     % sum components
-    st_uv_recon1 = zeros(Nt,Nv,Nu);
+    st_uv_recon1 = zeros(Nt,Nv,Nu,'single');
     for nu = 1:Nu
         for nb = 1:Nb
             st_uv_recon1(:,:,nu) = st_uv_recon1(:,:,nu)+st_uv_filt(:,:,nu,nb);
@@ -45,14 +45,14 @@ function filtered_image = applyFilter(st_uv,b,h_bp,negNorm,Nb,M)
         % compensate for group delay of filter
         su = [squeeze(st_uv(st_center,:,nv,:)) delay2];
         for nb = 1:Nb
-            filtered = filter(h_bp(nb,:),1,double(su),[],2);
+            filtered = filter(h_bp(nb,:),1,su,[],2);
             filtered(:,1:delay) = [];
             st_uv_filt(:,nv,:,nb) = DFIIR(filtered,b(:,:,nb),negNorm);
         end
     end
 
     % sum components
-    st_uv_recon2 = zeros(Ns,Nv,Nu);
+    st_uv_recon2 = zeros(Ns,Nv,Nu,'single');
     for nv = 1:Nv
         for nb = 1:Nb
             st_uv_recon2(:,nv,:) = st_uv_recon2(:,nv,:)+st_uv_filt(:,nv,:,nb);
