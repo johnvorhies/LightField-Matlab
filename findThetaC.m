@@ -183,7 +183,6 @@ function [theta_c,theta_zmin,theta_zmax] = findThetaC(EPI, fftsize)
     x_labels = {'$$-\frac{\pi}{2}$$','$$-\frac{\pi}{4}$$','0',...
         '$$\frac{\pi}{4}$$','$$\frac{\pi}{2}$$'};
     set(gca,'XtickLabel',x_labels)
-%     %print('filt_norm_Tarot','-depsc','-r300')
     
 end
 
